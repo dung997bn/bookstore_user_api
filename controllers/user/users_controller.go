@@ -10,24 +10,40 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-//GetUser gets single user
-func GetUser(c *gin.Context) {
-	userID, userErr := strconv.ParseInt(c.Param("user_id"), 10, 64)
-	if userErr != nil {
-		err := errors.NewBadRequestError("User id shoud be a number")
-		c.JSON(err.Status, err)
+func getHeaderPublic(header string) bool {
+	isPublic, err := strconv.ParseBool(header)
+	if err != nil {
+		return false
+	}
+	return isPublic
+}
+
+func getUserIDFromParam(userIDParam string) (int64, *errors.RestErr) {
+	userID, IDErr := strconv.ParseInt(userIDParam, 10, 64)
+	if IDErr != nil {
+		return 0, errors.NewBadRequestError("User id shoud be a number")
+	}
+	return userID, nil
+}
+
+//Get gets single user
+func Get(c *gin.Context) {
+	userID, IDErr := getUserIDFromParam(c.Param("user_id"))
+	if IDErr != nil {
+		c.JSON(IDErr.Status, IDErr)
 		return
 	}
 
-	user, getErr := services.GetUser(userID)
+	user, getErr := services.UsersService.GetUser(userID)
 	if getErr != nil {
 		c.JSON(getErr.Status, getErr)
+		return
 	}
-	c.JSON(http.StatusOK, user)
+	c.JSON(http.StatusOK, user.Marshall(getHeaderPublic(c.GetHeader("X-public"))))
 }
 
-//CreateUser creates an user
-func CreateUser(c *gin.Context) {
+//Create creates an user
+func Create(c *gin.Context) {
 	var user users.User
 	// way 1 to read data from request body
 	// bytes, err := ioutil.ReadAll(c.Request.Body)
@@ -43,20 +59,65 @@ func CreateUser(c *gin.Context) {
 	//way 2
 	if err := c.ShouldBindJSON(&user); err != nil {
 		restErr := errors.NewBadRequestError("Invalid json body")
-		//Handle error
 		c.JSON(restErr.Status, restErr)
 		return
 	}
-	result, saveErr := services.CreateUser(user)
+	result, saveErr := services.UsersService.CreateUser(user)
 	if saveErr != nil {
-		//Handle save error
 		c.JSON(saveErr.Status, saveErr)
 		return
 	}
-	c.JSON(http.StatusCreated, result)
+	c.JSON(http.StatusCreated, result.Marshall(getHeaderPublic(c.GetHeader("X-public"))))
 }
 
-//SearchUser search users by condition
-func SearchUser(c *gin.Context) {
-	c.String(http.StatusNotImplemented, "Implement me")
+//Update updates existed user by Id
+func Update(c *gin.Context) {
+	userID, IDErr := getUserIDFromParam(c.Param("user_id"))
+	if IDErr != nil {
+		c.JSON(IDErr.Status, IDErr)
+		return
+	}
+
+	var user users.User
+	if err := c.ShouldBindJSON(&user); err != nil {
+		restErr := errors.NewBadRequestError("Invalid json body")
+		c.JSON(restErr.Status, restErr)
+		return
+	}
+	user.ID = userID
+
+	isPatch := c.Request.Method == http.MethodPatch
+
+	result, UpdateErr := services.UsersService.UpdateUser(isPatch, user)
+	if UpdateErr != nil {
+		c.JSON(UpdateErr.Status, UpdateErr)
+		return
+	}
+	c.JSON(http.StatusCreated, result.Marshall(getHeaderPublic(c.GetHeader("X-public"))))
+}
+
+//Delete deletes an exits user
+func Delete(c *gin.Context) {
+	userID, IDErr := getUserIDFromParam(c.Param("user_id"))
+	if IDErr != nil {
+		c.JSON(IDErr.Status, IDErr)
+		return
+	}
+	rowsAffected, err := services.UsersService.DeleteUser(userID)
+	if err != nil {
+		c.JSON(err.Status, err)
+		return
+	}
+	c.JSON(http.StatusCreated, rowsAffected)
+}
+
+//SearchByStatus finds users by status
+func SearchByStatus(c *gin.Context) {
+	status := c.Query("status")
+	users, err := services.UsersService.SearchUserByStatus(status)
+	if err != nil {
+		c.JSON(err.Status, err)
+		return
+	}
+	c.JSON(http.StatusCreated, users.Marshall(getHeaderPublic(c.GetHeader("X-public"))))
 }
