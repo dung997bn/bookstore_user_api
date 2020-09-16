@@ -20,6 +20,7 @@ type usersServiceInterface interface {
 	UpdateUser(isPatch bool, user users.User) (*users.User, *errors.RestErr)
 	DeleteUser(userID int64) (int64, *errors.RestErr)
 	SearchUserByStatus(status string) (users.Users, *errors.RestErr)
+	LoginUser(request *users.LoginRequest) (*users.User, *errors.RestErr)
 }
 
 //GetUser get single User
@@ -96,4 +97,16 @@ func (u *usersService) DeleteUser(userID int64) (int64, *errors.RestErr) {
 func (u *usersService) SearchUserByStatus(status string) (users.Users, *errors.RestErr) {
 	dao := users.User{Status: status}
 	return dao.SearchByStatus()
+}
+
+//LoginUser func
+func (u *usersService) LoginUser(request *users.LoginRequest) (*users.User, *errors.RestErr) {
+	dao := &users.User{
+		Email:    request.Email,
+		Password: request.Password,
+	}
+	if err := dao.FindByEmailAndPassword(); err != nil {
+		return nil, err
+	}
+	return dao, nil
 }
