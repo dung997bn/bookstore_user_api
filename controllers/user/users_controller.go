@@ -4,6 +4,7 @@ import (
 	"net/http"
 	"strconv"
 
+	"github.com/dung997bn/bookstore_oauth-go/oauth"
 	"github.com/dung997bn/bookstore_user_api/domain/users"
 	"github.com/dung997bn/bookstore_user_api/services"
 	"github.com/dung997bn/bookstore_user_api/utils/errors"
@@ -28,6 +29,11 @@ func getUserIDFromParam(userIDParam string) (int64, *errors.RestErr) {
 
 //Get gets single user
 func Get(c *gin.Context) {
+	if err := oauth.AuthenticateRequest(c.Request); err != nil {
+		c.JSON(err.Status, err)
+		return
+	}
+
 	userID, IDErr := getUserIDFromParam(c.Param("user_id"))
 	if IDErr != nil {
 		c.JSON(IDErr.Status, IDErr)
@@ -39,7 +45,12 @@ func Get(c *gin.Context) {
 		c.JSON(getErr.Status, getErr)
 		return
 	}
-	c.JSON(http.StatusOK, user.Marshall(getHeaderPublic(c.GetHeader("X-public"))))
+
+	if oauth.GetCallerID(c.Request) == user.ID {
+		c.JSON(http.StatusOK, user.Marshall(false))
+		return
+	}
+	c.JSON(http.StatusOK, user.Marshall(oauth.IsPublic(c.Request)))
 }
 
 //Create creates an user
