@@ -1,14 +1,15 @@
 package users
 
 import (
+	"errors"
 	"fmt"
 
 	"github.com/dung997bn/bookstore_user_api/logger"
+	"github.com/dung997bn/bookstore_utils-go/resterrors"
 
 	"github.com/dung997bn/bookstore_user_api/datasources/mysql/usersdb"
 	"github.com/dung997bn/bookstore_user_api/utils/cryptoutils"
 	"github.com/dung997bn/bookstore_user_api/utils/dateutils"
-	"github.com/dung997bn/bookstore_user_api/utils/errors"
 	"github.com/dung997bn/bookstore_user_api/utils/mysqlutils"
 )
 
@@ -30,28 +31,28 @@ const (
 )
 
 //Get gets single by id
-func (user *User) Get() *errors.RestErr {
+func (user *User) Get() *resterrors.RestErr {
 	stmt, err := usersdb.Client.Prepare(queryGetUser)
 	if err != nil {
 		logger.Error("error when trying to prepare get user statement", err)
-		return errors.NewInternalServerError("database error")
+		return resterrors.NewInternalServerError("error when trying to prepare get user statement", errors.New("database error"))
 	}
 	defer stmt.Close()
 
 	result := stmt.QueryRow(user.ID)
 	if err := result.Scan(&user.ID, &user.FirstName, &user.LastName, &user.Email, &user.DateCreated, &user.Status); err != nil {
 		logger.Error("error when trying to get user by id", err)
-		return errors.NewInternalServerError("database error")
+		return resterrors.NewInternalServerError("error when trying to prepare get user statement", errors.New("database error"))
 	}
 	return nil
 }
 
 //Save user
-func (user *User) Save() *errors.RestErr {
+func (user *User) Save() *resterrors.RestErr {
 	stmt, err := usersdb.Client.Prepare(queryInsertUser)
 	if err != nil {
 		logger.Error("error when trying to prepare save user statement", err)
-		errors.NewInternalServerError(err.Error())
+		resterrors.NewInternalServerError(err.Error(), errors.New("database error"))
 	}
 	defer stmt.Close()
 	user.DateCreated = dateutils.GetNowDBFormat()
@@ -72,11 +73,11 @@ func (user *User) Save() *errors.RestErr {
 }
 
 //Update func
-func (user *User) Update() *errors.RestErr {
+func (user *User) Update() *resterrors.RestErr {
 	stmt, err := usersdb.Client.Prepare(queryUpdateUser)
 	if err != nil {
 		logger.Error("error when trying to prepare update user statement", err)
-		errors.NewInternalServerError(err.Error())
+		resterrors.NewInternalServerError(err.Error(), errors.New("database error"))
 	}
 	defer stmt.Close()
 	user.DateCreated = dateutils.GetNowDBFormat()
@@ -89,11 +90,11 @@ func (user *User) Update() *errors.RestErr {
 }
 
 //Delete func
-func (user *User) Delete() (int64, *errors.RestErr) {
+func (user *User) Delete() (int64, *resterrors.RestErr) {
 	stmt, err := usersdb.Client.Prepare(queryDeleteUser)
 	if err != nil {
 		logger.Error("error when trying to prepare delete user statement", err)
-		return 0, errors.NewInternalServerError(err.Error())
+		return 0, resterrors.NewInternalServerError(err.Error(), errors.New("database error"))
 	}
 	defer stmt.Close()
 	result, err := stmt.Exec(user.ID)
@@ -110,18 +111,18 @@ func (user *User) Delete() (int64, *errors.RestErr) {
 }
 
 //SearchByStatus func
-func (user *User) SearchByStatus() ([]User, *errors.RestErr) {
+func (user *User) SearchByStatus() ([]User, *resterrors.RestErr) {
 	stmt, err := usersdb.Client.Prepare(queryFindUserByStatus)
 	if err != nil {
 		logger.Error("error when trying to prepare search user statement", err)
-		return nil, errors.NewInternalServerError(err.Error())
+		return nil, resterrors.NewInternalServerError(err.Error(), errors.New("database error"))
 	}
 	defer stmt.Close()
 
 	rows, err := stmt.Query(user.Status)
 	if err != nil {
 		logger.Error("error when trying to search user", err)
-		return nil, errors.NewInternalServerError(err.Error())
+		return nil, resterrors.NewInternalServerError(err.Error(), errors.New("database error"))
 	}
 	defer rows.Close()
 
@@ -136,24 +137,24 @@ func (user *User) SearchByStatus() ([]User, *errors.RestErr) {
 	}
 	if len(results) == 0 {
 		logger.Error("no users matching", nil)
-		return nil, errors.NewNotFoundError(fmt.Sprintf("no users matching with status: %s", user.Status))
+		return nil, resterrors.NewNotFoundError(fmt.Sprintf("no users matching with status: %s", user.Status))
 	}
 	return results, nil
 }
 
 //FindByEmailAndPassword gets single user by email & pass
-func (user *User) FindByEmailAndPassword() *errors.RestErr {
+func (user *User) FindByEmailAndPassword() *resterrors.RestErr {
 	stmt, err := usersdb.Client.Prepare(queryFindByEmailAndPassword)
 	if err != nil {
 		logger.Error("error when trying to prepare find user by email & password statement", err)
-		return errors.NewInternalServerError("database error")
+		return resterrors.NewInternalServerError("error when trying to prepare find user by email & password statement", errors.New("database error"))
 	}
 	defer stmt.Close()
 	fmt.Println(user.Email)
 	result := stmt.QueryRow(user.Email, cryptoutils.GetMD5(user.Password), StatusActive)
 	if err := result.Scan(&user.ID, &user.FirstName, &user.LastName, &user.Email, &user.DateCreated, &user.Status); err != nil {
 		logger.Error("error when trying to get user by email & password", err)
-		return errors.NewInternalServerError("database error")
+		return resterrors.NewInternalServerError("error when trying to get user by email & password", errors.New("database error"))
 	}
 	return nil
 }

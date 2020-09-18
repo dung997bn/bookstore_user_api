@@ -2,7 +2,7 @@ package services
 
 import (
 	"github.com/dung997bn/bookstore_user_api/domain/users"
-	"github.com/dung997bn/bookstore_user_api/utils/errors"
+	"github.com/dung997bn/bookstore_utils-go/resterrors"
 )
 
 var (
@@ -15,16 +15,16 @@ type usersService struct{}
 
 //UserServiceInterface type
 type usersServiceInterface interface {
-	GetUser(userID int64) (*users.User, *errors.RestErr)
-	CreateUser(user users.User) (*users.User, *errors.RestErr)
-	UpdateUser(isPatch bool, user users.User) (*users.User, *errors.RestErr)
-	DeleteUser(userID int64) (int64, *errors.RestErr)
-	SearchUserByStatus(status string) (users.Users, *errors.RestErr)
-	LoginUser(request *users.LoginRequest) (*users.User, *errors.RestErr)
+	GetUser(userID int64) (*users.User, *resterrors.RestErr)
+	CreateUser(user users.User) (*users.User, *resterrors.RestErr)
+	UpdateUser(isPatch bool, user users.User) (*users.User, *resterrors.RestErr)
+	DeleteUser(userID int64) (int64, *resterrors.RestErr)
+	SearchUserByStatus(status string) (users.Users, *resterrors.RestErr)
+	LoginUser(request *users.LoginRequest) (*users.User, *resterrors.RestErr)
 }
 
 //GetUser get single User
-func (u *usersService) GetUser(userID int64) (*users.User, *errors.RestErr) {
+func (u *usersService) GetUser(userID int64) (*users.User, *resterrors.RestErr) {
 	result := &users.User{ID: userID}
 	if err := result.Get(); err != nil {
 		return nil, err
@@ -33,7 +33,7 @@ func (u *usersService) GetUser(userID int64) (*users.User, *errors.RestErr) {
 }
 
 //CreateUser creates user
-func (u *usersService) CreateUser(user users.User) (*users.User, *errors.RestErr) {
+func (u *usersService) CreateUser(user users.User) (*users.User, *resterrors.RestErr) {
 	if err := user.Validate(); err != nil {
 		return nil, err
 	}
@@ -44,7 +44,7 @@ func (u *usersService) CreateUser(user users.User) (*users.User, *errors.RestErr
 }
 
 //UpdateUser updates existed user by Id
-func (u *usersService) UpdateUser(isPatch bool, user users.User) (*users.User, *errors.RestErr) {
+func (u *usersService) UpdateUser(isPatch bool, user users.User) (*users.User, *resterrors.RestErr) {
 	currentUser, err := UsersService.GetUser(user.ID)
 	if err != nil {
 		return nil, err
@@ -77,7 +77,7 @@ func (u *usersService) UpdateUser(isPatch bool, user users.User) (*users.User, *
 }
 
 //DeleteUser deletes an exits user
-func (u *usersService) DeleteUser(userID int64) (int64, *errors.RestErr) {
+func (u *usersService) DeleteUser(userID int64) (int64, *resterrors.RestErr) {
 	currentUser, err := UsersService.GetUser(userID)
 	if err != nil {
 		return 0, err
@@ -94,13 +94,13 @@ func (u *usersService) DeleteUser(userID int64) (int64, *errors.RestErr) {
 }
 
 //SearchUserByStatus finds users by status
-func (u *usersService) SearchUserByStatus(status string) (users.Users, *errors.RestErr) {
+func (u *usersService) SearchUserByStatus(status string) (users.Users, *resterrors.RestErr) {
 	dao := users.User{Status: status}
 	return dao.SearchByStatus()
 }
 
 //LoginUser func
-func (u *usersService) LoginUser(request *users.LoginRequest) (*users.User, *errors.RestErr) {
+func (u *usersService) LoginUser(request *users.LoginRequest) (*users.User, *resterrors.RestErr) {
 	dao := &users.User{
 		Email:    request.Email,
 		Password: request.Password,

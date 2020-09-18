@@ -1,9 +1,10 @@
 package mysqlutils
 
 import (
+	"errors"
 	"strings"
 
-	"github.com/dung997bn/bookstore_user_api/utils/errors"
+	"github.com/dung997bn/bookstore_utils-go/resterrors"
 	"github.com/go-sql-driver/mysql"
 )
 
@@ -12,18 +13,18 @@ const (
 )
 
 //ParseError parse error to Mysql error
-func ParseError(err error) *errors.RestErr {
+func ParseError(err error) *resterrors.RestErr {
 	sqlErr, ok := err.(*mysql.MySQLError)
 	if !ok {
 		if strings.Contains(err.Error(), noRowsError) {
-			return errors.NewNotFoundError("No record matching with given parameter")
+			return resterrors.NewNotFoundError("No record matching with given parameter")
 		}
-		return errors.NewInternalServerError("Error when process request")
+		return resterrors.NewInternalServerError("Error when process request", errors.New("error mysql server"))
 	}
 
 	switch sqlErr.Number {
 	case 1062:
-		return errors.NewBadRequestError("Invalid data")
+		return resterrors.NewBadRequestError("Invalid data")
 	}
-	return errors.NewInternalServerError("Error when process request")
+	return resterrors.NewInternalServerError("Error when process request", errors.New("error mysql server"))
 }
