@@ -1,6 +1,7 @@
 package user
 
 import (
+	"fmt"
 	"net/http"
 	"strconv"
 
@@ -45,8 +46,8 @@ func Get(c *gin.Context) {
 		c.JSON(getErr.Status, getErr)
 		return
 	}
+	if oauth.GetCallerID(c.Request) != user.ID {
 
-	if oauth.GetCallerID(c.Request) == user.ID {
 		c.JSON(http.StatusOK, user.Marshall(false))
 		return
 	}
@@ -136,6 +137,7 @@ func SearchByStatus(c *gin.Context) {
 //Login func
 func Login(c *gin.Context) {
 	var request users.LoginRequest
+	fmt.Println(request)
 	if err := c.ShouldBindJSON(&request); err != nil {
 		restErr := resterrors.NewBadRequestError("Invalid json body")
 		c.JSON(restErr.Status, restErr)
