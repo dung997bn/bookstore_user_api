@@ -31,7 +31,7 @@ type Users []User
 // }
 
 //Validate validates if user is valid or not
-func (user *User) Validate() *resterrors.RestErr {
+func (user *User) Validate() resterrors.RestErr {
 	user.FirstName = strings.TrimSpace(user.FirstName)
 	user.LastName = strings.TrimSpace(user.LastName)
 	user.Email = strings.TrimSpace(strings.ToLower(user.Email))
