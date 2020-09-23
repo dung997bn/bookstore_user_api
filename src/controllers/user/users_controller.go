@@ -6,8 +6,8 @@ import (
 	"strconv"
 
 	"github.com/dung997bn/bookstore_oauth-go/oauth"
-	"github.com/dung997bn/bookstore_user_api/domain/users"
-	"github.com/dung997bn/bookstore_user_api/services"
+	"github.com/dung997bn/bookstore_user_api/src/domain/users"
+	"github.com/dung997bn/bookstore_user_api/src/services"
 	"github.com/dung997bn/bookstore_utils-go/resterrors"
 	"github.com/gin-gonic/gin"
 )

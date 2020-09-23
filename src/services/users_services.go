@@ -1,7 +1,7 @@
 package services
 
 import (
-	"github.com/dung997bn/bookstore_user_api/domain/users"
+	"github.com/dung997bn/bookstore_user_api/src/domain/users"
 	"github.com/dung997bn/bookstore_utils-go/resterrors"
 )
 

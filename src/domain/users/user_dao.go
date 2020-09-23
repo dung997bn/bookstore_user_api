@@ -4,13 +4,13 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/dung997bn/bookstore_user_api/logger"
+	"github.com/dung997bn/bookstore_user_api/src/logger"
 	"github.com/dung997bn/bookstore_utils-go/resterrors"
 
-	"github.com/dung997bn/bookstore_user_api/datasources/mysql/usersdb"
-	"github.com/dung997bn/bookstore_user_api/utils/cryptoutils"
-	"github.com/dung997bn/bookstore_user_api/utils/dateutils"
-	"github.com/dung997bn/bookstore_user_api/utils/mysqlutils"
+	"github.com/dung997bn/bookstore_user_api/src/datasources/mysql/usersdb"
+	"github.com/dung997bn/bookstore_user_api/src/utils/cryptoutils"
+	"github.com/dung997bn/bookstore_user_api/src/utils/dateutils"
+	"github.com/dung997bn/bookstore_user_api/src/utils/mysqlutils"
 )
 
 const (
